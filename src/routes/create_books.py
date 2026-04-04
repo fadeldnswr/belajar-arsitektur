@@ -1,7 +1,9 @@
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from src.controllers.create_books import CreateBooksController
-from src.models.books import BooksResponse, Book, Message
+from src.models.books import Book, BookDB, Message
+from sqlalchemy.orm import Session
+from src.db.db import get_db
 
 # Define router for handling book-related endpoints
 router = APIRouter(
@@ -11,37 +13,25 @@ router = APIRouter(
 
 # Endpoint to create a new book entry
 @router.post("/", response_model=Message, status_code=201)
-async def create_book(
-  id: int = Query(..., description="The unique ID of the book"), title: str = Query(..., description="The title of the book"),
-  author: str = Query(..., description="The author of the book"), published_year: int = Query(..., description="The year the book was published"),
-  genre: str = Query(..., description="The genre of the book")) -> Message:
-
+async def create_book(new_book: Book, db: Session = Depends(get_db)) -> Message:
   try:
     # Insert the new book details into a Book model instance
     controller = CreateBooksController()
     
     # New book instance to be created
-    new_book = Book(
-      id=id, title=title, author=author,
-      published_year=published_year, genre=genre,
+    new_book = BookDB(
+      id=new_book.id, title=new_book.title, author=new_book.author,
+      published_year=new_book.published_year, genre=new_book.genre,
+      created_at=new_book.created_at
     )
     
     # Call the controller method to create a new book entry and get the response
-    response = controller.create_book(new_book)
-    
-    # Check if the book ID already exists in the list of books
-    for book in response.data:
-      if book.id == id:
-        return Message(
-          status=400, 
-          message=f"Book with ID {id} already exists", 
-          data=None
-        )
+    response = controller.create_book(new_book, db)
     
     # Return the response from the controller method to create a new book entry
     return Message(
       status=201, 
-      message="Book created successfully", 
+      message="Book has been created successfully", 
       data=response.data
     )
   except Exception as e:
