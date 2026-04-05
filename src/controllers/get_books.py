@@ -1,26 +1,28 @@
 
-from src.models.books import BooksResponse, BookDB
+from src.schemas.books import BooksResponse
+from src.models.books import BookDB
 from sqlalchemy.orm import Session
+from src.repositories.book_repository import BookRepository
 
 # Define class for handling GET /books endpoint
 class GetBooksController:
-  def __init__(self, db: Session = None):
-    self.db = db
-  
   # Method to retrieve all books from the in-memory list
-  def get_books(self) -> BooksResponse:
-    # Query all books from the database
-    books = self.db.query(BookDB).all() 
-    return BooksResponse(data=books) # Return the list of books in the response
+  def get_books(self, db: Session) -> BooksResponse:
+    repo = BookRepository(db)
+    get_all_books_list = repo.get_all()
+    return BooksResponse(data=get_all_books_list)
   
   # Method to retrieve a book by its ID
-  def get_book_by_title(self, book_title: str) -> BooksResponse:
-    # Query the database to find the book with the specified title
-    books = self.db.query(BookDB).filter(BookDB.title == book_title).all()
-    return BooksResponse(data=books) # Return the book details in the response
+  def get_book_by_title(self, book_title: str, db: Session) -> BooksResponse:
+    repo = BookRepository(db)
+    return repo.get_book_by_title(book_title)
+  
+  # Method to get list of all books by title
+  def get_books_by_title_list(self, book_title: str, db: Session) -> BooksResponse:
+    repo = BookRepository(db)
+    return repo.list_of_book_by_title(book_title)
   
   # Method to filter books by genre
-  def filter_books_by_genre(self, genre: str) -> BooksResponse:
-    # Query the database to find books with the specified genre
-    books = self.db.query(BookDB).filter(BookDB.genre == genre).all()
-    return BooksResponse(data=books) # Return the filtered list of books in the response
+  def filter_books_by_genre(self, genre: str, db: Session) -> BooksResponse:
+    repo = BookRepository(db)
+    return repo.filter_books_by_genre(genre)
