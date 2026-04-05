@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
-from src.models.books import Book, Message, BookDB
+from src.schemas.books import BookUpdate, Message
 from sqlalchemy.orm import Session
 
 from src.db.db import get_db
@@ -14,19 +14,13 @@ router = APIRouter(
 
 # Define endpoint to update a book by its title
 @router.put("/", response_model=Message, status_code=200)
-async def update_book_by_id(new_book: Book, db: Session = Depends(get_db), book_title: str = Query(..., description="Title of the book to be updated")):
+async def update_book_by_id(new_book: BookUpdate, db: Session = Depends(get_db), book_title: str = Query(..., description="Title of the book to be updated")):
   try:
     # Create an instance of updated books
-    controller = UpdateBooksController(db=db)
-    
-    # Create an instance of the updated book with the provided details
-    updated_book = BookDB(
-      id=new_book.id, title=new_book.title, author=new_book.author, 
-      published_year=new_book.published_year, genre=new_book.genre
-    )
+    controller = UpdateBooksController()
     
     # Call the controller method to update the book details
-    response = controller.update_book(book_title, updated_book)
+    response = controller.update_book(book_title, new_book, db)
     
     # Check if the book with the specified title doesn't exist
     if not response.data:

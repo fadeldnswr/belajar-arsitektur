@@ -1,7 +1,7 @@
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from src.controllers.create_books import CreateBooksController
-from src.models.books import Book, BookDB, Message
+from src.schemas.books import BookCreate, Message
 from sqlalchemy.orm import Session
 from src.db.db import get_db
 
@@ -13,17 +13,10 @@ router = APIRouter(
 
 # Endpoint to create a new book entry
 @router.post("/", response_model=Message, status_code=201)
-async def create_book(new_book: Book, db: Session = Depends(get_db)) -> Message:
+async def create_book(new_book: BookCreate, db: Session = Depends(get_db)) -> Message:
   try:
     # Insert the new book details into a Book model instance
     controller = CreateBooksController()
-    
-    # New book instance to be created
-    new_book = BookDB(
-      id=new_book.id, title=new_book.title, author=new_book.author,
-      published_year=new_book.published_year, genre=new_book.genre,
-      created_at=new_book.created_at
-    )
     
     # Call the controller method to create a new book entry and get the response
     response = controller.create_book(new_book, db)

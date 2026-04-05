@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.db.db import get_db
 from src.controllers.get_books import GetBooksController
-from src.models.books import Message
+from src.schemas.books import Message
 
 # Define router for handling book-related endpoints
 router = APIRouter(
@@ -16,8 +16,8 @@ router = APIRouter(
 async def get_books(db: Session = Depends(get_db)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController(db=db)
-    response = controller.get_books()
+    controller = GetBooksController()
+    response = controller.get_books(db=db)
     
     # Check if there are no books in the list before returning the response
     if not response.data:
@@ -31,7 +31,7 @@ async def get_books(db: Session = Depends(get_db)):
     return Message(
       status=200,
       message="Books retrieved successfully.",
-      data=response
+      data=response.data
     )
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
@@ -41,8 +41,8 @@ async def get_books(db: Session = Depends(get_db)):
 async def get_books_by_genre(genre: str = Query(..., description="Books genre to filter by"), db: Session = Depends(get_db)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController(db=db)
-    response = controller.filter_books_by_genre(genre)
+    controller = GetBooksController()
+    response = controller.filter_books_by_genre(genre, db)
     
     # Check if there are no books with the specified genre
     if not response.data:
@@ -66,8 +66,8 @@ async def get_books_by_genre(genre: str = Query(..., description="Books genre to
 async def get_book_by_title(book_title: str, db: Session = Depends(get_db)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController(db=db)
-    response = controller.get_book_by_title(book_title)
+    controller = GetBooksController()
+    response = controller.get_books_by_title_list(book_title, db)
     
     # Check if there are no books with the specified title in the list before returning the response
     if not response.data:
@@ -81,7 +81,7 @@ async def get_book_by_title(book_title: str, db: Session = Depends(get_db)):
     return Message(
       status=200,
       message="Book retrieved successfully.",
-      data=[response] if response else []
+      data=response.data
     )
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
