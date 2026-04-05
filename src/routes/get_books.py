@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlalchemy.orm import Session
 
-from src.db.db import get_db
 from src.controllers.get_books import GetBooksController
+from src.dependencies.dependencies import (
+  get_books, get_book_by_title, 
+  filter_books_by_genre
+)
 from src.schemas.books import Message
 
 # Define router for handling book-related endpoints
@@ -13,12 +15,11 @@ router = APIRouter(
 
 # Endpoint to get all books
 @router.get("/", response_model=Message, status_code=200)
-async def get_books(db: Session = Depends(get_db)):
+async def get_books(controller: GetBooksController = Depends(get_books)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController()
-    response = controller.get_books(db=db)
-    
+    response = controller.get_books()
+
     # Check if there are no books in the list before returning the response
     if not response.data:
       return Message(
@@ -38,11 +39,10 @@ async def get_books(db: Session = Depends(get_db)):
 
 # Endpoint to filter books by genre
 @router.get("/genre", response_model=Message, status_code=200)
-async def get_books_by_genre(genre: str = Query(..., description="Books genre to filter by"), db: Session = Depends(get_db)):
+async def get_books_by_genre(genre: str = Query(..., description="Books genre to filter by"), controller: GetBooksController = Depends(filter_books_by_genre)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController()
-    response = controller.filter_books_by_genre(genre, db)
+    response = controller.filter_books_by_genre(genre)
     
     # Check if there are no books with the specified genre
     if not response.data:
@@ -63,11 +63,10 @@ async def get_books_by_genre(genre: str = Query(..., description="Books genre to
 
 # Endpoint to get books by title
 @router.get("/{book_title}", response_model=Message, status_code=200)
-async def get_book_by_title(book_title: str, db: Session = Depends(get_db)):
+async def get_book_by_title(book_title: str, controller: GetBooksController = Depends(get_book_by_title)):
   try:
     # Define a controller instance to handle the request
-    controller = GetBooksController()
-    response = controller.get_books_by_title_list(book_title, db)
+    response = controller.get_books_by_title_list(book_title)
     
     # Check if there are no books with the specified title in the list before returning the response
     if not response.data:
