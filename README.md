@@ -1,2 +1,12 @@
-# Belajar Model-View-Controller
-Belajar arsitektur MVC menggunakan FastAPI, studi kasus untuk library management system.
+# Learn Clean Architecture
+Learn Clean Architecture using FastAPI for Book Management System.
+
+## Features
+  - Dependency Injection
+  - Repository Design Pattern
+  - Modular and Scalable code
+
+## Future Improvements
+  - Database migration
+  - Utilize cloud service
+  - Implement microservices
