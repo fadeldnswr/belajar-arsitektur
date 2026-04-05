@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from src.db.config import settings
 
 # Load database settings
@@ -21,7 +20,8 @@ SessionLocal = sessionmaker(
 )
 
 # Create a base class for declarative class definitions
-Base = declarative_base()
+class Base(DeclarativeBase):
+  pass
 
 # Dependency to get a database session
 def get_db():
